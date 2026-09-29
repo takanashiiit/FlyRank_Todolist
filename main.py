@@ -17,11 +17,11 @@ tasks = [
 def home():
     return {"message": "Hello"}
 
-@app.get("/tasks")
+@app.get("/tasks",description="Get all tasks")
 def get_tasks():
     return tasks
 
-@app.get("/tasks/{task_id}")
+@app.get("/tasks/{task_id}", description="get a task by id")
 def get_task(task_id: int):
     for task in tasks:
         if task["id"] == task_id:
@@ -29,7 +29,7 @@ def get_task(task_id: int):
 
     raise HTTPException(status_code=404, detail="Task not found")
 
-@app.post("/tasks", status_code=201)
+@app.post("/tasks", status_code=201,description="create a task")
 def create_task(task: Task):
     new_id = max(t["id"] for t in tasks) + 1
 
@@ -41,18 +41,16 @@ def create_task(task: Task):
 
     tasks.append(new_task)
     return new_task
-
-@app.put("/tasks/{task_id}")
+@app.put("/tasks/{task_id}",description="update a task")
 def update_task(task_id: int, task: Task):
     for t in tasks:
         if t["id"] == task_id:
             t["title"] = task.title
             t["done"] = task.done
             return t
-
     raise HTTPException(status_code=404, detail="Task not found")
 
-@app.delete("/tasks/{task_id}", status_code=204)
+@app.delete("/tasks/{task_id}", status_code=204,description="delete a task")
 def delete_task(task_id: int):
     for t in tasks:
         if t["id"] == task_id:
