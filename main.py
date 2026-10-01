@@ -42,11 +42,6 @@ def create_db_and_seed():
 def startup():
     create_db_and_seed()
 
-tasks = [
-    {"id": 1, "title": "Learn FastAPII", "done": False},
-    {"id": 2, "title": "Build Todo API", "done": False},
-    {"id": 3, "title": "Submit FlyRank assignment", "done": False}
-]
 
 @app.get("/")
 def home():
@@ -81,23 +76,34 @@ def create_task(task: Task):
         session.refresh(new_task)
 
         return new_task
-@app.put("/tasks/{task_id}",description="update a task")
+@app.put("/tasks/{task_id}", description="update a task")
 def update_task(task_id: int, task: Task):
-    for t in tasks:
-        if t["id"] == task_id:
-            t["title"] = task.title
-            t["done"] = task.done
-            return t
-    raise HTTPException(status_code=404, detail="Task not found")
+    with Session(engine) as session:
+        existing_task = session.get(TaskDB, task_id)
 
-@app.delete("/tasks/{task_id}", status_code=204,description="delete a task")
+        if not existing_task:
+            raise HTTPException(status_code=404, detail="Task not found")
+
+        existing_task.title = task.title
+        existing_task.done = task.done
+
+        session.add(existing_task)
+        session.commit()
+        session.refresh(existing_task)
+
+        return existing_task
+
+@app.delete("/tasks/{task_id}", status_code=204, description="delete a task")
 def delete_task(task_id: int):
-    for t in tasks:
-        if t["id"] == task_id:
-            tasks.remove(t)
-            return
+    with Session(engine) as session:
+        task = session.get(TaskDB, task_id)
 
-    raise HTTPException(status_code=404, detail="Task not found")
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+
+        session.delete(task)
+        session.commit()
+
 from sqlmodel import Session, select
 
 with Session(engine) as session:
