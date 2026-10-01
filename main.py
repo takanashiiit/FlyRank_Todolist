@@ -68,18 +68,19 @@ def get_task(task_id: int):
 
         raise HTTPException(status_code=404, detail="Task not found")
 
-@app.post("/tasks", status_code=201,description="create a task")
+@app.post("/tasks", status_code=201, description="create a task")
 def create_task(task: Task):
-    new_id = max(t["id"] for t in tasks) + 1
+    with Session(engine) as session:
+        new_task = TaskDB(
+            title=task.title,
+            done=task.done
+        )
 
-    new_task = {
-        "id": new_id,
-        "title": task.title,
-        "done": task.done
-    }
+        session.add(new_task)
+        session.commit()
+        session.refresh(new_task)
 
-    tasks.append(new_task)
-    return new_task
+        return new_task
 @app.put("/tasks/{task_id}",description="update a task")
 def update_task(task_id: int, task: Task):
     for t in tasks:
