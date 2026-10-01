@@ -1,11 +1,46 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+from sqlmodel import SQLModel, Field, Session, create_engine, select
 
 app = FastAPI()
+
 
 class Task(BaseModel):
     title: str
     done: bool = False
+
+
+class TaskDB(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    title: str
+    done: bool = False
+
+
+DATABASE_URL = "sqlite:///tasks.db"
+
+engine = create_engine(DATABASE_URL)
+
+
+def create_db_and_seed():
+    SQLModel.metadata.create_all(engine)
+
+    with Session(engine) as session:
+        existing_tasks = session.exec(select(TaskDB)).all()
+
+        if not existing_tasks:
+            tasks = [
+                TaskDB(title="Learn FastAPI", done=False),
+                TaskDB(title="Build Todo API", done=False),
+                TaskDB(title="Submit FlyRank assignment", done=False)
+            ]
+
+            session.add_all(tasks)
+            session.commit()
+
+
+@app.on_event("startup")
+def startup():
+    create_db_and_seed()
 
 tasks = [
     {"id": 1, "title": "Learn FastAPI", "done": False},
@@ -58,3 +93,8 @@ def delete_task(task_id: int):
             return
 
     raise HTTPException(status_code=404, detail="Task not found")
+from sqlmodel import Session, select
+
+with Session(engine) as session:
+    tasks = session.exec(select(TaskDB)).all()
+    print(tasks)
