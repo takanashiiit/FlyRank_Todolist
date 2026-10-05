@@ -9,8 +9,9 @@ class Task(BaseModel):
     title: str
     done: bool = False
 
-
 class TaskDB(SQLModel, table=True):
+    __tablename__ = "tasks"
+
     id: int | None = Field(default=None, primary_key=True)
     title: str
     done: bool = False
@@ -103,9 +104,4 @@ def delete_task(task_id: int):
 
         session.delete(task)
         session.commit()
-
-from sqlmodel import Session, select
-
-with Session(engine) as session:
-    tasks = session.exec(select(TaskDB)).all()
-    print(tasks)
+git rm --cached tasks.db
