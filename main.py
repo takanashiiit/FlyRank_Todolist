@@ -7,7 +7,7 @@ app = FastAPI()
 
 
 class Task(BaseModel):
-    title: str
+    title: str | None = None
     done: bool = False
 
 class TaskDB(SQLModel, table=True):
@@ -72,6 +72,8 @@ def get_task(task_id: int):
 
 @app.post("/tasks", status_code=201, description="create a task")
 def create_task(task: Task):
+    if not task.title or not task.title.strip():
+        raise HTTPException(status_code=400, detail="Title is required")
     with Session(engine) as session:
         new_task = TaskDB(
             title=task.title,
@@ -83,15 +85,19 @@ def create_task(task: Task):
         session.refresh(new_task)
 
         return new_task
+
 @app.put("/tasks/{task_id}", description="update a task")
 def update_task(task_id: int, task: Task):
+    if not task.title or not task.title.strip():
+        raise HTTPException(status_code=400, detail="Title is required")
+
     with Session(engine) as session:
         existing_task = session.get(TaskDB, task_id)
 
         if not existing_task:
             raise HTTPException(status_code=404, detail="Task not found")
 
-        existing_task.title = task.title
+        existing_task.title = task.title.strip()
         existing_task.done = task.done
 
         session.add(existing_task)
