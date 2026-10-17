@@ -1,7 +1,8 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from sqlmodel import SQLModel, Field, Session, create_engine, select
-
+from dotenv import load_dotenv
+import os
 app = FastAPI()
 
 
@@ -17,7 +18,9 @@ class TaskDB(SQLModel, table=True):
     done: bool = False
 
 
-DATABASE_URL = "sqlite:///tasks.db"
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(DATABASE_URL)
 
@@ -104,4 +107,3 @@ def delete_task(task_id: int):
 
         session.delete(task)
         session.commit()
-git rm --cached tasks.db
