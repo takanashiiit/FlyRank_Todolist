@@ -65,7 +65,10 @@ def get_task(task_id: int):
         if task:
             return task
 
-        raise HTTPException(status_code=404, detail="Task not found")
+        raise HTTPException(
+            status_code=404,
+            detail={"error": "Task not found"}
+        )
 
 @app.post("/tasks", status_code=201, description="create a task")
 def create_task(task: Task):
