@@ -1,3 +1,42 @@
+﻿# FlyRank Todo API
+A task API built with FastAPI, SQLModel and PostgreSQL, running in Docker. One command starts the API and its database.
+## Run everything
+```
+cp .env.example .env
+docker compose up
+```
+
+On Windows PowerShell use `Copy-Item .env.example .env` instead of `cp`. Then open http://localhost:8000/docs.
+## Variables
+Set these in `.env` (see `.env.example`):
+- `DATABASE_URL` - connection string used when running the API outside Docker
+- `POSTGRES_PASSWORD` - the database password (also used by `compose.yaml`)
+Tasks are stored in a Docker volume, so they survive `docker compose down` and `up`. Never use `docker compose down -v` unless you want to wipe the data.
+## Endpoints
+| Method | Path | Description | Success | Errors |
+|--------|------|-------------|---------|--------|
+| GET | /tasks | List all tasks | 200 | - |
+| GET | /tasks/{id} | Get one task | 200 | 404 |
+| POST | /tasks | Create a task | 201 | 400 |
+| PUT | /tasks/{id} | Update a task | 200 | 400, 404 |
+| DELETE | /tasks/{id} | Delete a task | 204 | 404 |
+## Example: curl -i for an unknown id
+```
+HTTP/1.1 404 Not Found
+date: Sat, 17 Oct 2026 16:53:21 GMT
+server: uvicorn
+content-length: 37
+content-type: application/json
+
+{"detail":{"error":"Task not found"}}
+```
+## Data in the database
+![Tasks table in Postgres](db.png)
+
+---
+
+## Previous assignment: A2 (SQLite)
+
 # Todo API
 
 A simple Todo CRUD API built with FastAPI and SQLite.
@@ -89,3 +128,4 @@ Swagger UI:
 * `POST /tasks` - Create a task
 * `PUT /tasks/{task_id}` - Update a task
 * `DELETE /tasks/{task_id}` - Delete a task
+
